@@ -1,6 +1,7 @@
 ﻿using FinchAPI;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Finch_Starter
 {
@@ -16,6 +17,23 @@ namespace Finch_Starter
     // Last Revised:     2/20/2021
     //
     // *************************************************************
+
+    /// <summary>
+    /// User Commands to Use
+    /// </summary>
+    public enum Command
+    {
+        MOVEFORWARD,
+        MOVEBACKWARD,
+        STOPMOTORS,
+        WAIT,
+        TURNRIGHT,
+        TURNLEFT,
+        LEDON,
+        LEDOFF,
+        GETTEMPERATURE,
+        DONE
+    }
 
     class Program
     {
@@ -96,7 +114,7 @@ namespace Finch_Starter
                         break;
 
                     case "E":
-                        DisplayUnderWorkMessage();
+                        DisplayUserProgrammingMenuScreen(finchRobot);
                         break;
 
                     case "F":
@@ -116,6 +134,190 @@ namespace Finch_Starter
                 }
             } while (!quitApplication);  
 
+        }
+
+        #endregion
+
+        #region USER PROGRAMMING
+
+        static void DisplayUserProgrammingMenuScreen(Finch finchRobot)
+        {
+            Console.Clear();
+            Console.CursorVisible = true;
+
+            bool quitUserProgrammingMenu = false;
+            string userResonse;
+            int menuChoice;
+
+            (int motorSpeed, int ledBrightness, double waitseconds) commandParameters;
+            List<Command> commands = null;
+            
+            do
+            {
+                DisplayHeader("User Programming Menu");
+
+                //
+                // get user menu choice
+                //
+                Console.WriteLine();
+                Console.WriteLine("\t1) Set Command Parameters");
+                Console.WriteLine();
+                Console.WriteLine("\t2) Add Finch Commands");
+                Console.WriteLine();
+                Console.WriteLine("\t3) View Finch Commands");
+                Console.WriteLine();
+                Console.WriteLine("\t4) Execute Finch Commands");
+                Console.WriteLine();
+                Console.WriteLine("\t5) Return to Main Menu");
+                Console.WriteLine();
+                Console.WriteLine();
+
+                //
+                // validate menu choice if not an int
+                //
+                bool validResponse;
+                do
+                {
+                    validResponse = true;
+                    Console.Write("\t\tEnter Choice: ");
+                    userResonse = Console.ReadLine().Trim();
+
+                    if (!int.TryParse(userResonse, out menuChoice))
+                    {
+                        Console.WriteLine();
+                        Console.WriteLine("\tPlease enter a whole number from 1 - 5.");
+                        Console.WriteLine();
+
+                        validResponse = false;
+                    }
+                } while (!validResponse);
+
+                //
+                // validate if menu choice is or isn't an int from 1 - 5
+                //
+                switch (menuChoice)
+                {
+                    case 1:
+                        commandParameters = DisplayUserProgrammingSetCommandParameters();
+                        break;
+
+                    case 2:
+                        commands = DisplayUserProgrammingAddFinchCommands();
+                        break;
+
+                    case 3:
+                        DisplayUserProgrammingViewFinchCommands(commands);
+                        break;
+
+                    case 4:
+                        
+                        break;
+
+                    case 5:
+                        quitUserProgrammingMenu = true;
+                        break;
+
+                    default:
+                        Console.WriteLine();
+                        Console.WriteLine("\tPlease enter a whole number from 1 - 5 in the menu choice.");
+                        DisplayContinuePropmt();
+                        break;
+                }
+
+            } while (!quitUserProgrammingMenu);
+        }
+
+        /// <summary>
+        /// Display View Finch Commands
+        /// </summary>
+        /// <param name="commands"></param>
+        private static void DisplayUserProgrammingViewFinchCommands(List<Command> commands)
+        {
+            Console.Clear();
+
+            DisplayHeader("View Finch Commands");
+
+            Console.WriteLine("\tCommand List");
+            Console.WriteLine("\t------------");
+
+            foreach (Command command in commands)
+            {
+                Console.WriteLine("\t" + command);
+            }
+
+            DisplayMenuPrompt("User Programming Menu");
+        }
+
+        /// <summary>
+        /// Display Add Finch Commands
+        /// </summary>
+        /// <returns></returns>
+        static List<Command> DisplayUserProgrammingAddFinchCommands()
+        {
+            List<Command> commands = new List<Command>();
+            bool isDone = false;
+            string userResponse;
+            Command command;
+
+            DisplayHeader("User Commands for Finch");
+
+            //
+            // SHOW A LIST OF ALL VALID COMMANDS
+            //
+
+            do
+            {
+                Console.Write("Enter Command: ");
+                userResponse = Console.ReadLine().ToUpper();
+
+                if (userResponse != "done")
+                {
+                    if (Enum.TryParse(userResponse, out command))
+                    {
+                        commands.Add(command);
+                    }
+                    else
+                    {
+                        Console.WriteLine("\tPlease enter a proper command.");
+                    }
+                }
+                else
+                {
+                    isDone = true;
+                }
+
+            } while (!isDone);
+
+            DisplayMenuPrompt("User Programming Menu");
+
+            return commands;
+        }
+
+        /// <summary>
+        /// Display Set Command Parameters
+        /// </summary>
+        /// <returns></returns>
+        static (int motorSpeed, int ledBrightness, double waitseconds) DisplayUserProgrammingSetCommandParameters()
+        {
+            (int motorSpeed, int ledBrightness, double waitseconds) commandParameters;
+
+            DisplayHeader("Command Parameters");
+
+            //
+            // REMEBER TO VALIDATE EVERYTHING
+            //
+            Console.Write("Motor Speed: ");
+            commandParameters.motorSpeed = int.Parse(Console.ReadLine());
+
+            Console.Write("LED Brightness: ");
+            commandParameters.ledBrightness = int.Parse(Console.ReadLine());
+
+            Console.Write("Wait Time (Seconds): ");
+            commandParameters.waitseconds = int.Parse(Console.ReadLine());
+
+            DisplayMenuPrompt("User Programming Menu");
+
+            return commandParameters;
         }
 
         #endregion
