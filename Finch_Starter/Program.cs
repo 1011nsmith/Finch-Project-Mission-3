@@ -256,8 +256,6 @@ namespace Finch_Starter
             double waitSeconds = commandParameters.waitseconds;
             int soundFrequency = commandParameters.soundFrequency;
             
-            //List<(Command command, int duration)> command = new List<(Command command, int duration)>();
-            
             Console.Clear();
 
             DisplayHeader("Execute Commands");
@@ -416,7 +414,7 @@ namespace Finch_Starter
             do
             {
                 Console.WriteLine();
-                Console.Write("Enter Command: ");
+                Console.Write(" Enter Command: ");
                 userResponse = Console.ReadLine().ToUpper();
 
                 if (userResponse != "DONE")
