@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Finch_Starter
 {
@@ -48,7 +49,7 @@ namespace Finch_Starter
 
         static void Main(string[] args)
         {
-            SetTheme();
+            DisplaySetTheme();
 
             DisplayWelcomeScreen();
 
@@ -142,6 +143,195 @@ namespace Finch_Starter
                 }
             } while (!quitApplication);  
 
+        }
+
+        #endregion
+
+        #region FILE I/O
+
+        /// <summary>
+        /// Set Theme
+        /// </summary>
+        static void DisplaySetTheme()
+        {
+            (ConsoleColor foregroundColor, ConsoleColor backgroundColor) themeColors;
+            bool themeChosen = false;
+            string userResponse;
+            bool exitLoop = false;
+
+            DisplayHeader("Current Application Color Theme");
+
+            // set current theme from data
+            Console.WriteLine();
+            themeColors = DisplayReadThemeData(out string fileIOStatusMessage);
+
+            Console.ForegroundColor = themeColors.foregroundColor;
+            Console.BackgroundColor = themeColors.backgroundColor;
+            
+            Console.Clear();
+
+            DisplayHeader("Set Application Color Theme");
+            Console.WriteLine();
+            Console.WriteLine("\tCurrent foreground color: {0}", Console.ForegroundColor);
+            Console.WriteLine("\tCurrent background color: {0}", Console.BackgroundColor);
+            Console.WriteLine();
+
+            do
+            {
+                Console.Write(" Would you like to change the current application theme? [ yes | no ] ");
+                userResponse = Console.ReadLine().Trim().ToLower();
+
+                if (userResponse == "yes")
+                {
+                    Console.Clear();
+
+                    Console.WriteLine();
+                    Console.WriteLine("********************************  ALL AVAILABLE COLORS  *********************************");
+                    Console.WriteLine("|  Red  |  Green  |  Yellow  |  White  |  Cyan  |  Black  |  Blue  |  Gray  |  Magenta  |");
+                    Console.WriteLine("  | DarkRed | DarkGreen | DarkYellow | Dark Cyan | DarkGray | DarkBlue | DarkMagenta |");
+                    Console.WriteLine("*****************************************************************************************");
+                    Console.WriteLine();
+                    Console.WriteLine("\tPLEASE NOTE: Enter the color exactly as they are displayed above.");
+                    Console.WriteLine();
+
+                    do
+                    {
+                        themeColors.foregroundColor = DisplayGetConsoleColorFromUser("foreground");
+                        themeColors.backgroundColor = DisplayGetConsoleColorFromUser("background");
+
+                        // set new theme
+                        Console.ForegroundColor = themeColors.foregroundColor;
+                        Console.BackgroundColor = themeColors.backgroundColor;
+
+                        DisplayHeader("New Application Theme");
+
+                        Console.WriteLine();
+                        Console.WriteLine("\tNew foreground color: {0}", Console.ForegroundColor);
+                        Console.WriteLine("\tNew background color: {0}", Console.BackgroundColor);
+                        Console.WriteLine();
+                        Console.Write(" Would you like to keep this new theme? ");
+
+                        if (Console.ReadLine().Trim().ToLower() == "yes")
+                        {
+                            themeChosen = true;
+                            DisplayWriteThemeData(themeColors.foregroundColor, themeColors.backgroundColor);
+                            exitLoop = true;
+                        }
+
+                    } while (!themeChosen);
+                }
+                else if (userResponse == "no")
+                {
+                    exitLoop = true;
+                }
+                else
+                {
+                    Console.WriteLine();
+                    Console.WriteLine(" Sorry, an invalid response was recorded.");
+                    Console.WriteLine();
+                }
+            } while (!exitLoop);
+
+            Console.WriteLine();
+            Console.WriteLine("\tPress any key to continue to the rest of the application. ");
+            Console.ReadKey();
+        }
+
+        /// <summary>
+        /// Get Console Color form User
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        static ConsoleColor DisplayGetConsoleColorFromUser(string property)
+        {
+            ConsoleColor consoleColor;
+            bool validConsoleColor;
+
+            do
+            {
+                Console.Write(" Enter a {0} color: ", property);
+                validConsoleColor = Enum.TryParse<ConsoleColor>(Console.ReadLine().Trim(), true, out consoleColor);
+
+                if (!validConsoleColor)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("\tThe color you entered isn't a valid console color. Please try again.");
+                    Console.WriteLine();
+                }
+                else
+                {
+                    validConsoleColor = true;
+                }
+            } while (!validConsoleColor);
+
+            return consoleColor;
+        }
+
+        /// <summary>
+        /// Read Theme Info from Data File
+        /// </summary>
+        /// <returns></returns>
+        static (ConsoleColor foregroundColor, ConsoleColor backgroundColor) DisplayReadThemeData(out string fileIOStatusMessage)
+        {
+            string dataPath = @"Data/Theme.txt";
+            string[] themeColors;
+
+            ConsoleColor foregroundColor = ConsoleColor.Black;
+            ConsoleColor backgroundColor = ConsoleColor.White;
+
+            try
+            {
+                themeColors = File.ReadAllLines(dataPath);
+
+                if (Enum.TryParse(themeColors[0], true, out foregroundColor) && 
+                    Enum.TryParse(themeColors[1], true, out backgroundColor))
+                {
+                    fileIOStatusMessage = "Complete";
+                }
+                else
+                {
+                    fileIOStatusMessage = "Data file invalidly entered.";
+                }
+            }
+            catch (DirectoryNotFoundException)
+            {
+                fileIOStatusMessage = "Unable to locate the data file folder.";
+            }
+            catch (Exception)
+            {
+                fileIOStatusMessage = "Unable to read data file.";
+            }
+            
+
+            return (foregroundColor, backgroundColor);
+        }
+
+        /// <summary>
+        /// Write Theme Info to Data File
+        /// </summary>
+        /// <param name="foreground"></param>
+        /// <param name="background"></param>
+        static string DisplayWriteThemeData(ConsoleColor foreground, ConsoleColor background)
+        {
+            string dataPath = @"Data/Theme.txt";
+            string fileIOStatusMessage = "";
+
+            try
+            {
+                File.WriteAllText(dataPath, foreground.ToString() + "\n");
+                File.AppendAllText(dataPath, background.ToString());
+                fileIOStatusMessage = "Complete";
+            }
+            catch (DirectoryNotFoundException)
+            {
+                fileIOStatusMessage = "Unable to locate the data file folder.";
+            }
+            catch (Exception)
+            {
+                fileIOStatusMessage = "Unable to write to the data file.";
+            }
+
+            return fileIOStatusMessage;
         }
 
         #endregion

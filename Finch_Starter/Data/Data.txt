@@ -1,0 +1,3 @@
+﻿Hello NMC!
+My name is Nate.
+I am a student at NMC.
